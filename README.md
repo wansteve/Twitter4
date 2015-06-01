@@ -23,4 +23,4 @@ Home Timeline
 * [ ] Include a plus button to Add an Account
 * [ ] Swipe to delete an account
 
-![Video Walkthrough](demo.gif)
+![Video Walkthrough](Twitter_demo2.1.gif)
