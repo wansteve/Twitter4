@@ -8,10 +8,16 @@
 
 import UIKit
 
+// wansteve0
+ let twitterConsumerKey = "jc6XmTRyCQkC4ogE4fa2OEqzL"
+ let twitterConsumerSecret = "M0lDng9LwKfikAoi54hXtgNDd6IpkQqns31hftYIgnH3ko4ny3"
 
-let twitterConsumerKey = "jc6XmTRyCQkC4ogE4fa2OEqzL"
-let twitterConsumerSecret = "M0lDng9LwKfikAoi54hXtgNDd6IpkQqns31hftYIgnH3ko4ny3"
+// sunnyday858
+//let twitterConsumerKey = "aHPyNejHHQSceTrKvUoludMbx"
+//let twitterConsumerSecret = "g3e2jQZdp0OHbWzv1fXbU8Zp0JCq26m8uWmVp5KbHWcDq4MkgM"
 
+
+// codepath
 // let twitterConsumerKey = "Zwi6PYVjgkXwXhodsla7jVaz9"
 // let twitterConsumerSecret = "DCtIS3p2kgslg7vqBAWXqzTPvejfhy5KPTm91yhiAapa3acSqv"
 
@@ -34,16 +40,16 @@ class TwitterClient: BDBOAuth1RequestOperationManager {
     func homeTimeLineWithParams(params: NSDictionary?, completion: (tweets: [Tweet]?, error: NSError?) -> ()) {
         
         GET("1.1/statuses/home_timeline.json", parameters: params, success: { (operation: AFHTTPRequestOperation!, response: AnyObject!) -> Void in
-             println("home timeline: \(response)")
+             // println("home timeline: \(response)")
             var tweets = Tweet.tweetsWithArray(response as! [NSDictionary]) // standard way of extracting from an array of dictionary to array of tweets is that initialize an array of tweets with an array of dictionary
             
             completion(tweets: tweets, error: nil)
             
-            
+            /*
             for tweet in tweets {
                 println("text: \(tweet.text) created: \(tweet.createdAt)")
             }
-            
+            */
             
             
             
@@ -55,6 +61,35 @@ class TwitterClient: BDBOAuth1RequestOperationManager {
         
         
     } // homeTimeLineWithParams
+    
+    
+    func mentionsTimeLineWithParams(params: NSDictionary?, completion: (tweets: [Tweet]?, error: NSError?) -> ()) {
+        
+        GET("1.1/statuses/mentions_timeline.json", parameters: params, success: { (operation: AFHTTPRequestOperation!, response: AnyObject!) -> Void in
+            // println("home timeline: \(response)")
+            var tweets = Tweet.tweetsWithArray(response as! [NSDictionary]) // standard way of extracting from an array of dictionary to array of tweets is that initialize an array of tweets with an array of dictionary
+            
+            completion(tweets: tweets, error: nil)
+            
+            /*
+            for tweet in tweets {
+            println("text: \(tweet.text) created: \(tweet.createdAt)")
+            }
+            */
+            
+            
+            
+            }, failure: { (operation: AFHTTPRequestOperation!, error: NSError!) -> Void in
+                println("Failed to getting home timeline \(error)")
+                completion(tweets: nil, error: error)
+                
+        })
+        
+        
+    } // mentionsTimeLineWithParams
+    
+    
+
     
     
     func postStatusUpdateWithParams(params: NSDictionary?, completion: (tweet: Tweet?, error: NSError?) -> ()) {
@@ -145,7 +180,7 @@ class TwitterClient: BDBOAuth1RequestOperationManager {
             
             
             TwitterClient.sharedInstance.GET("1.1/account/verify_credentials.json", parameters: nil, success: { (operation: AFHTTPRequestOperation!, response: AnyObject!) -> Void in
-                // println("user: \(response)")
+                 println("user: \(response)")
                 
                 var user = User(dictionary: response as! NSDictionary) // init User with the dictionary returned by verify_credentials.json
                 User.currentUser = user

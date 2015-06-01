@@ -12,12 +12,35 @@ struct TwitterEvents {
     static let TweetPosted = "TweetPosted"
 }
 
-class TweetsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate  {
+class TweetsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, LeftMenuViewControllerDelegate  {
     
     @IBOutlet weak var tableView: UITableView!
     
     var tweets: [Tweet]?
+    // var mentions: Int?
+    var mentions = 0
 
+    
+
+    
+    func cellSelected(menuItem: NSString){
+        println("WWW: \(menuItem)")
+        switch(menuItem){
+        case "Timeline":
+            self.mentions = 0
+            println("MENTIONS = \(mentions)")
+        case "Mentions":
+            self.mentions = 1
+            println("MENTIONS = \(mentions)")
+
+        default:
+            println("BREAK = \(mentions)")
+            break
+
+            
+        }
+    }// cellSelected
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -32,18 +55,34 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         loadStatuses()
         
         // Do any additional setup after loading the view.
-        TwitterClient.sharedInstance.homeTimeLineWithParams(nil, completion: { (tweets, error) -> () in
-             self.tweets = tweets
+        
+        var defaults = NSUserDefaults.standardUserDefaults()
+        var mentions = defaults.integerForKey("MentionsKey")
+        println("view did load WWW: \(mentions)")
+
+        if(mentions == 0) {
+            TwitterClient.sharedInstance.homeTimeLineWithParams(nil, completion: { (tweets, error) -> () in
+                self.tweets = tweets
             
-            // initialize tableview with the following 2 lines
-            self.tableView.delegate = self
-            self.tableView.dataSource = self
-            self.tableView.rowHeight = UITableViewAutomaticDimension
-            self.tableView.estimatedRowHeight = 120
+                // initialize tableview with the following 2 lines
+                self.tableView.delegate = self
+                self.tableView.dataSource = self
+                self.tableView.rowHeight = UITableViewAutomaticDimension
+                self.tableView.estimatedRowHeight = 120
+        })} else {
+            TwitterClient.sharedInstance.mentionsTimeLineWithParams(nil, completion: { (tweets, error) -> () in
+                self.tweets = tweets
+                
+                // initialize tableview with the following 2 lines
+                self.tableView.delegate = self
+                self.tableView.dataSource = self
+                self.tableView.rowHeight = UITableViewAutomaticDimension
+                self.tableView.estimatedRowHeight = 120
+            })}
+    
             
             
             
-        })
     } // viewDidLoad
     
     override func viewDidAppear(animated: Bool) {
@@ -51,12 +90,23 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         
         println("viewdidappear")
         
-        
-        self.tableView.addPullToRefreshWithActionHandler {
-            TwitterClient.sharedInstance.homeTimeLineWithParams(nil, completion: { (tweets , error) -> () in
-                self.loadStatuses()
-            })
-        } // PulltoRefresh 
+        var defaults = NSUserDefaults.standardUserDefaults()
+        var mentions = defaults.integerForKey("MentionsKey")
+        println("View Did Appear WWW: \(mentions)")
+
+        if(mentions == 0) {
+            self.tableView.addPullToRefreshWithActionHandler {
+                TwitterClient.sharedInstance.homeTimeLineWithParams(nil, completion: { (tweets , error) -> () in
+                    self.loadStatuses()
+                })
+            } // PulltoRefresh
+        } else {
+            self.tableView.addPullToRefreshWithActionHandler {
+                TwitterClient.sharedInstance.mentionsTimeLineWithParams(nil, completion: { (tweets , error) -> () in
+                    self.loadStatuses()
+                })
+            } // PulltoRefresh
+        }
         
         
     } // viewDidAppear
@@ -65,15 +115,17 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     
     func loadStatuses() {
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
+        
+        var defaults = NSUserDefaults.standardUserDefaults()
+        var mentions = defaults.integerForKey("MentionsKey")
+        println("loadStatuses WWW: \(mentions)")
+
+        if (mentions == 0) {
         TwitterClient.sharedInstance.homeTimeLineWithParams(nil, completion: { (tweets, error) -> () in
-            
-            
             // pull to refresh
             if self.tableView.pullToRefreshView != nil {
                 self.tableView.pullToRefreshView.stopAnimating()
             }
-            
-            
             self.tweets = tweets
             self.tableView.reloadData()
             
@@ -82,6 +134,23 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
                 return ()
             })
         })
+        } else {
+            TwitterClient.sharedInstance.mentionsTimeLineWithParams(nil, completion: { (tweets, error) -> () in
+                // pull to refresh
+                if self.tableView.pullToRefreshView != nil {
+                    self.tableView.pullToRefreshView.stopAnimating()
+                }
+                self.tweets = tweets
+                self.tableView.reloadData()
+                
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    MBProgressHUD.hideHUDForView(self.view, animated: true)
+                    return ()
+                })
+            })
+        }
+        
+        
     }
     
     

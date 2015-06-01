@@ -19,6 +19,10 @@ class User: NSObject {
     var profileImageUrl: NSURL
     var tagline: String?
     var dictionary: NSDictionary
+    var location: String?
+    var following: Int?
+    var followers: Int?
+
     
     init(dictionary: NSDictionary) {
         self.dictionary = dictionary // initializing var dictionary with init parameter dictionary
@@ -29,6 +33,12 @@ class User: NSObject {
         profileImageUrl = NSURL(string: (dictionary["profile_image_url"] as! String).stringByReplacingOccurrencesOfString("_normal", withString: "_bigger", options: nil, range: nil))!
 
         tagline = dictionary["description"] as? String
+        
+        location = dictionary["location"] as? String
+        
+        following = dictionary["friends_count"] as? Int
+        
+        followers = dictionary["followers_count"] as? Int
         
     }
     
